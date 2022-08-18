@@ -1,3 +1,6 @@
+# Enviroment variables files
+.env
+
 # compiled output
 /dist
 /node_modules
@@ -13,7 +16,7 @@ lerna-debug.log*
 
 # OS
 .DS_Store
-.env
+
 # Tests
 /coverage
 /.nyc_output
