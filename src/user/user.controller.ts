@@ -1,35 +1,40 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { AuthService } from 'src/auth/auth.service';
 
-@Controller('user')
+@Controller('')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService 
+  ) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) : User {
-    return this.userService.create(createUserDto);
+  @Post('register')
+  async create(@Body() createUserDto: CreateUserDto) : Promise<User> {
+    createUserDto.password = await this.authService.encryptPassword(createUserDto.password)
+    return this.userService.create(createUserDto)
   }
 
-  @Get()
-  findAll() {
+  @Get('user')
+  findAll() : Promise<User[]>{
     return this.userService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  @Get('user/:id')
+  findOne(@Param('id', ParseIntPipe) id: number) : Promise<User> {
     return this.userService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+  @Patch('user/:id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) : Promise<User> {
     return this.userService.update(+id, updateUserDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  @Delete('user/:id')
+  remove(@Param('id', ParseIntPipe) id: number) : Promise<{}> {
     return this.userService.remove(+id);
   }
 }

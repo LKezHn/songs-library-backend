@@ -1,28 +1,85 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+import { LoginUserDto } from 'src/auth/dto/login-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
-  create(createUserDto: CreateUserDto) : User {
-    console.log(createUserDto)
-    return createUserDto;
+
+  private prisma = new PrismaClient()
+
+  async exists(loginUserDto: LoginUserDto) : Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: loginUserDto.email
+      }
+    })
+
+    return user
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async create(createUserDto: CreateUserDto): Promise<User> {
+
+    const newUser = await this.prisma.user.create({
+      data: { ...createUserDto }
+    })
+
+    return newUser;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findAll() : Promise<User[]> {
+
+    const users : User[] = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        firstname: true,
+        lastname: true,
+        email: true,
+      }
+    })
+
+    return users;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async findOne(id: number): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id
+      },
+      select: {
+        id: true,
+        username: true,
+        firstname: true,
+        lastname: true,
+        email: true,
+      }
+    })
+
+    return user;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) : Promise<User>{
+    
+    const updatedUser = await this.prisma.user.update({
+      where: {
+        id: id,
+      },
+      data: { ... updateUserDto }
+    })
+    
+    return updatedUser;
   }
+
+  async remove(id: number) : Promise<{}> {
+
+    await this.prisma.user.delete({
+      where: { id: id }
+    })
+    
+    return { message: "User deleted"};
+  }
+
 }
